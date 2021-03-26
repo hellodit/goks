@@ -1,4 +1,4 @@
-## Go in-memory cache algorithm
+## Goks
 Go in-memory cache algorithm currently full support LRU Algorithm  
 
 #### Installation
