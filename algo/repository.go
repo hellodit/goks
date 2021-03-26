@@ -8,4 +8,5 @@ type Repository interface {
 	GetOldest() (res *cache.Topic, err error)
 	RemoveOldest() (err error)
 	Peek(key string) (res *cache.Topic, err error)
+	GetKeys() (keys []string, err error)
 }

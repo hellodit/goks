@@ -7,22 +7,29 @@ import (
 )
 
 type Repository struct {
-	maxSizeItem uint64
-	items       map[string]*list.Element
-	itemsPositionList   *list.List
+	maxSizeItem       uint64
+	items             map[string]*list.Element
+	itemsPositionList *list.List
 }
 
+func (lru *Repository) GetKeys() (keys []string, err error) {
+	keys = make([]string, len(lru.items))
+	i := 0
+	for elem := lru.itemsPositionList.Back(); elem != nil; elem = elem.Prev() {
+		keys[i] = elem.Value.(*cache.Topic).Key
+		i++
+	}
+	return
+}
 
 func NewLruCache(size uint64) *Repository {
-	c :=  &Repository{
-		maxSizeItem: size,
-		items:       make(map[string]*list.Element),
-		itemsPositionList:   list.New(),
+	c := &Repository{
+		maxSizeItem:       size,
+		items:             make(map[string]*list.Element),
+		itemsPositionList: list.New(),
 	}
 	return c
 }
-
-
 
 func (lru *Repository) GetOldest() (res *cache.Topic, err error) {
 	elem := lru.itemsPositionList.Back()
@@ -35,7 +42,7 @@ func (lru *Repository) GetOldest() (res *cache.Topic, err error) {
 
 func (lru *Repository) RemoveOldest() error {
 	elem := lru.itemsPositionList.Back()
-	if elem != nil{
+	if elem != nil {
 		lru.removeElement(elem)
 	}
 
@@ -48,9 +55,9 @@ func (lru *Repository) removeElement(e *list.Element) {
 	delete(lru.items, top.Key)
 }
 
-func (lru *Repository) Set(topic *cache.Topic) error  {
+func (lru *Repository) Set(topic *cache.Topic) error {
 	// Check for exiting key items
-	if ent, exist := lru.items[topic.Key]; exist{
+	if ent, exist := lru.items[topic.Key]; exist {
 		lru.itemsPositionList.MoveToFront(ent)
 		ent.Value.(*cache.Topic).Value = topic.Value
 		return errors.New("can't add the cache, key has been used")
@@ -69,9 +76,9 @@ func (lru *Repository) Set(topic *cache.Topic) error  {
 	return nil
 }
 
-func (lru *Repository) Get(key string) (result *cache.Topic, err error)  {
+func (lru *Repository) Get(key string) (result *cache.Topic, err error) {
 
-	if ent, exist := lru.items[key]; exist{
+	if ent, exist := lru.items[key]; exist {
 		result = ent.Value.(*cache.Topic)
 		lru.itemsPositionList.MoveToFront(ent)
 		return
