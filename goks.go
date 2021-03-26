@@ -13,9 +13,7 @@ type Cache struct {
 	repo algo.Repository
 }
 
-
-
-func NewClient(options ...*cache.Option)(c cache.CacheRepository){
+func NewClient(options ...*cache.Option) (c cache.CacheRepository) {
 	option := mergeCacheOptions(options...)
 	if option.MaxSizeItem == 0 {
 		// if not set use default size
@@ -28,20 +26,20 @@ func NewClient(options ...*cache.Option)(c cache.CacheRepository){
 	return c
 }
 
-func NewCacheOptions() (op *cache.Option){
+func NewCacheOptions() (op *cache.Option) {
 	return &cache.Option{}
 }
 
-func NewCacheRepository(option cache.Option) algo.Repository{
+func NewCacheRepository(option cache.Option) algo.Repository {
 	var cacheRepo algo.Repository
 	cacheRepo = lru.NewLruCache(option.MaxSizeItem)
 	return cacheRepo
 }
 
-func mergeCacheOptions(options ...*cache.Option) (opts *cache.Option)  {
+func mergeCacheOptions(options ...*cache.Option) (opts *cache.Option) {
 	opts = new(cache.Option)
 	// Check given option
-	for _, op := range options{
+	for _, op := range options {
 		if op.MaxSizeItem != 0 {
 			opts.MaxSizeItem = op.MaxSizeItem
 		}
@@ -67,7 +65,7 @@ func (c *Cache) Set(key string, value interface{}) error {
 func (c *Cache) Get(key string) (val interface{}, err error) {
 	c.RLock()
 	topic, err := c.repo.Get(key)
-	c.RLock()
+	c.RUnlock()
 	if err != nil {
 		return
 	}
@@ -79,13 +77,25 @@ func (c *Cache) Delete(key string) (err error) {
 }
 
 func (c *Cache) GetKeys() (keys []string, err error) {
-	panic("implement me")
+	c.RLock()
+	keys, err = c.repo.GetKeys()
+	if err != nil {
+		return
+	}
+	c.RUnlock()
+	return
 }
 
 func (c *Cache) ClearCache() (err error) {
 	panic("implement me")
 }
 
-func (c *Cache) PeekCache() (err error) {
-	panic("implement me")
+func (c *Cache) PeekByKey(key string) (val interface{}, err error) {
+	c.RLock()
+	topic, err := c.repo.Peek(key)
+	if err != nil {
+		return nil, err
+	}
+	c.RUnlock()
+	return topic, nil
 }

@@ -27,5 +27,6 @@ type CacheRepository interface {
 	Get(key string) (val interface{}, err error)
 	Delete(key string) (err error)
 	ClearCache() (err error)
-	PeekCache() (err error)
+	PeekByKey(key string) (val interface{}, err error)
+	GetKeys() (keys []string, err error)
 }
