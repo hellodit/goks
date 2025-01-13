@@ -91,11 +91,12 @@ func (c *Cache) ClearCache() (err error) {
 }
 
 func (c *Cache) PeekByKey(key string) (val interface{}, err error) {
-	c.RLock()
-	topic, err := c.repo.Peek(key)
-	if err != nil {
-		return nil, err
-	}
-	c.RUnlock()
-	return topic, nil
+    c.RLock()
+    defer c.RUnlock()
+
+    topic, err := c.repo.Peek(key)
+    if err != nil {
+        return nil, err
+    }
+    return topic, nil
 }
