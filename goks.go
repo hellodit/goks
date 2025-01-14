@@ -39,7 +39,7 @@ func NewCacheRepository(option cache.Option) algo.Repository {
 func mergeCacheOptions(options ...*cache.Option) (opts *cache.Option) {
 	opts = new(cache.Option)
 	// Check given option
-	for _, op := range options {
+	for _, op := options {
 		if op.MaxSizeItem != 0 {
 			opts.MaxSizeItem = op.MaxSizeItem
 		}
@@ -87,7 +87,15 @@ func (c *Cache) GetKeys() (keys []string, err error) {
 }
 
 func (c *Cache) ClearCache() (err error) {
-	panic("implement me")
+	// Acquire a write lock before modifying the cache
+	c.Lock()
+	defer c.Unlock()
+
+	// Remove all elements from the itemsPositionList and clear the items map in the Repository struct
+	c.repo = NewCacheRepository(cache.Option{MaxSizeItem: cache.DefaultCapacity})
+
+	// Return an error if any issues occur during the clearing process
+	return nil
 }
 
 func (c *Cache) PeekByKey(key string) (val interface{}, err error) {
